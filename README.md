@@ -52,7 +52,7 @@ A machine-readable copy is also kept in [`results/leaderboard.md`](./results/lea
 - [x] **PhaseInferred** — oracle phase-duration stack (true phases)
 - [x] **SequenceMatch** — sequence matching baseline
 - [x] **KostopoulosRF** — Kostopoulos et al., *Biomed. Eng. / Biomed. Tech.*, 2025 [[paper]](https://doi.org/10.1515/bmt-2024-0431)
-- [x] **PadoyHMM** — Padoy et al., *Med. Image Anal.*, 2012 [[paper]](https://doi.org/10.1016/j.media.2011.10.001)
+- [x] **PadoyHMM** — Padoy et al., *Med. Image Anal.*, 2012 [[paper]](https://www.sciencedirect.com/science/article/pii/S1361841510001131)
 
 **Deep methods**
 - [x] **TimeLSTM** — Aksamentov et al., MICCAI 2017 [[paper]](https://doi.org/10.1007/978-3-319-66185-8_66)
