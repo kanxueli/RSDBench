@@ -57,15 +57,15 @@ A machine-readable copy is also kept in [`results/leaderboard.md`](./results/lea
 **Deep methods**
 - [x] **TimeLSTM** — Aksamentov et al., MICCAI 2017 [[paper]](https://doi.org/10.1007/978-3-319-66185-8_66)
 - [x] **RSDNet** — Twinanda et al., *IEEE TMI*, 2019 [[paper]](https://doi.org/10.1109/TMI.2018.2878055)
-- [x] **CataNet** — Marafioti et al., MICCAI 2021 [[paper]](https://doi.org/10.1007/978-3-030-87202-1_42)
-- [x] **BDNet** — Wu et al., MICCAI 2022 / *Comput. Med. Imaging Graph.*, 2023 [[MICCAI]](https://doi.org/10.1007/978-3-031-16449-1_40) [[journal]](https://doi.org/10.1016/j.compmedimag.2023.102314)
-- [x] **PitRSDNet** — Wijekoon et al., *Healthc. Technol. Lett.*, 2024 [[paper]](https://doi.org/10.1049/htl2.12095) [[arXiv]](https://arxiv.org/abs/2409.16998)
+- [x] **CataNet** — Marafioti et al., MICCAI 2021 [[paper]](https://link.springer.com/chapter/10.1007/978-3-030-87202-1_41)
+- [x] **BDNet** — Wu et al., MICCAI 2022 / *Comput. Med. Imaging Graph.*, 2023 [[MICCAI]](https://doi.org/10.1007/978-3-031-16449-1_40)
+- [x] **PitRSDNet** — Wijekoon et al., *Healthc. Technol. Lett.*, 2024 [[paper]](https://ietresearch.onlinelibrary.wiley.com/doi/full/10.1049/htl2.12099)
 - [x] **TransLocal** — Loukas et al., *Int. J. Med. Robot.*, 2024 [[paper]](https://doi.org/10.1002/rcs.2632)
-- [x] **VTDNet** — Bodenstedt et al., *IJCARS*, 2019 [[paper]](https://doi.org/10.1007/s11548-019-01979-1)
+- [x] **VTDNet** — Bodenstedt et al., *IJCARS*, 2019 [[paper]](https://link.springer.com/article/10.1007/s11548-019-01966-6)
 - [x] **SWAG** — Boels et al., *IJCARS*, 2025 [[paper]](https://doi.org/10.1007/s11548-025-03452-8)
 - [x] **Rivoir2019** — Rivoir et al., OR 2.0 / MLCN 2019 [[paper]](https://doi.org/10.1007/978-3-030-32695-1_4)
-- [x] **Rivoir2020** — Rivoir et al., MICCAI 2020 [[paper]](https://doi.org/10.1007/978-3-030-59716-0_72) [[arXiv]](https://arxiv.org/abs/2007.00548)
-- [x] **SUPRGAN** — Ban et al., *IEEE RA-L*, 2022 [[paper]](https://doi.org/10.1109/LRA.2022.3185364)
+- [x] **Rivoir2020** — Rivoir et al., MICCAI 2020 [[paper]](https://doi.org/10.1007/978-3-030-59716-0_72) 
+- [x] **SUPRGAN** — Ban et al., *IEEE RA-L*, 2022 [[paper]](https://ieeexplore.ieee.org/abstract/document/9729515/)
 
 Many video-based methods follow a typical two-stage training pattern (frame encoder → temporal head):
 
