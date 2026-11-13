@@ -1,0 +1,13 @@
+# Install torch/torchvision FIRST via scripts/setup_env.sh (CUDA build).
+# Do not `pip install torch` from a CPU index.
+numpy>=1.23
+pandas>=1.5
+PyYAML>=6.0
+tqdm>=4.65
+scikit-learn>=1.2
+opencv-python-headless>=4.8
+Pillow>=9.5
+einops>=0.7
+matplotlib>=3.7
+tabulate>=0.9
+omegaconf>=2.3

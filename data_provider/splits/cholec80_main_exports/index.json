@@ -1,0 +1,40 @@
+{
+  "protocol": "./configs/protocol/cholec80_main.yaml",
+  "repeats": [
+    {
+      "seed": 42,
+      "path": "data_provider/splits/cholec80_main_exports/seed42.json",
+      "train": 48,
+      "val": 12,
+      "test": 20
+    },
+    {
+      "seed": 43,
+      "path": "data_provider/splits/cholec80_main_exports/seed43.json",
+      "train": 48,
+      "val": 12,
+      "test": 20
+    },
+    {
+      "seed": 44,
+      "path": "data_provider/splits/cholec80_main_exports/seed44.json",
+      "train": 48,
+      "val": 12,
+      "test": 20
+    },
+    {
+      "seed": 45,
+      "path": "data_provider/splits/cholec80_main_exports/seed45.json",
+      "train": 48,
+      "val": 12,
+      "test": 20
+    },
+    {
+      "seed": 46,
+      "path": "data_provider/splits/cholec80_main_exports/seed46.json",
+      "train": 48,
+      "val": 12,
+      "test": 20
+    }
+  ]
+}

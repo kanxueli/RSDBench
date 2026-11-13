@@ -1,0 +1,59 @@
+# All methods share the same repeat splits; never mix with cataract101_main.
+#
+# INVARIANT: for each seed/repeat, every method must use the SAME train and test
+# ID lists. Training recipes may differ (e.g. CNN FT only on train, val from train),
+# but test IDs must not be seen before final evaluation. Do NOT use legacy 40/40
+# (video01-40 / 41-80) for the main leaderboard.
+
+name: cholec80_main
+dataset: cholec80
+version: "1.0"
+
+endpoint:
+  # Align with video phase annotation span (first–last annotated frame).
+  type: phase_span
+  unit: minutes
+
+sampling:
+  fps: 1.0
+  source_fps: 25
+
+split:
+  scheme: repeated_holdout   # N x train/test random split
+  train_ratio: 0.75          # 60 / 80
+  test_ratio: 0.25           # 20 / 80
+  n_repeats: 5               # configurable; default 5
+  seed_start: 42             # seeds = seed_start .. seed_start+n_repeats-1
+  # Optional: carve val from train for early stopping (same for all methods)
+  val_ratio_in_train: 0.2    # 48 train / 12 val / 20 test when enabled
+  use_val: true
+
+metrics:
+  # Window minutes for mae_*/rel_err_*/smape_* (video-macro)
+  windows: [2, 5, 10, 30]
+  primary:
+    - mae_all
+    - mae_2
+    - mae_5
+    - mae_10
+    - mae_30
+    - rel_err_all
+    - smape_all
+    - rel_err_5
+    - smape_5
+    - rel_err_30
+    - smape_30
+  stratified:
+    - duration_quartile   # Q1–Q4 by total duration
+  baselines_required:
+    - NaiveMedian
+    - ConditionalMedian
+  report: mean_std          # across repeats
+
+aggregation:
+  # Per-video mean first, then mean over videos (case-equal weight)
+  video_macro: true
+
+online:
+  causal: true
+  allow_future_frames: false

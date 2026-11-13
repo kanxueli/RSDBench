@@ -1,0 +1,7 @@
+model_name: PhaseInferred
+model:
+  name: PhaseInferred
+  stat: median
+  # overwritten per dataset in scripts if needed
+  n_phases: 7
+is_baseline: true

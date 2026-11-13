@@ -1,0 +1,5 @@
+# Exists so packer always passes configs/experiment/<ds>_<method>.yaml like other methods.
+model_name: Rivoir2019
+model:
+  name: Rivoir2019
+is_baseline: false

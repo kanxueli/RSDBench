@@ -1,0 +1,5 @@
+model_name: NaiveMean
+model:
+  name: NaiveMean
+  stat: mean
+is_baseline: true

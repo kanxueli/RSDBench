@@ -1,0 +1,31 @@
+# SWAG (Boels et al.)
+model_name: SWAG
+is_baseline: false
+use_features: true
+model:
+  name: SWAG
+  n_phases: 7
+  input_dim: 768
+  d_model: 512
+  ctx_length: 1440
+  present_length: 20
+  num_ctx_tokens: 12
+  num_ant_queries: 1
+  pooling_dim: 64
+  n_embd: 512
+  n_layer: 2
+  n_head: 8
+  informer: {n_heads: 8, e_layers: 2, d_layers: 2, d_ff: 1024, dropout: 0.1, factor: 5}
+swag_train:
+  horizon_min: null
+  loss_w_curr: 0.4
+  loss_w_remaining_time: 1.0
+  regression_loss_scale: 0.1
+  rsd_loss_gamma: 10.0
+  epochs: 80
+  patience: 15
+  warmup_epochs: 5
+  batch_size: 64
+  lr: 3.0e-4
+  weight_decay: 1.0e-5
+  eta_min: 1.0e-7

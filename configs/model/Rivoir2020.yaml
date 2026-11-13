@@ -1,0 +1,22 @@
+# Rivoir 2020 (Rivoir et al., MICCAI 2020)
+model_name: Rivoir2020
+model:
+  name: Rivoir2020
+  embed_dim: 256
+  hidden_size: 512
+  dropout: 0.2
+  mc_samples: 10
+  n_phases: 7
+  train_window: 384
+  cnn_batch: 256
+  batch_windows: 2
+  lambda_ce: 0.01
+  grad_accum: 1
+  pretrained_cnn: false
+epochs: 100
+lr: 1.0e-4
+weight_decay: 1.0e-5
+early_stopping:
+  enabled: true
+  monitor: mae_all
+  patience: 15

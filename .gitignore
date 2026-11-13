@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+.cache/
+results/*
+!results/leaderboard.md
+*.pth
+*.pt
+.venv*/
+.venv_rsdbench/
+.ipynb_checkpoints/
+.DS_Store
+*.egg-info/
+dist/
+build/
+wandb/
+runs/
+resolved_config.yaml
+
+# private / large artifacts
+Kanxue_survey.pdf
+*.pdf

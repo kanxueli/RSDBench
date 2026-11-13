@@ -1,0 +1,5 @@
+# cholec80 × Rivoir2019
+model_name: Rivoir2019
+model:
+  name: Rivoir2019
+is_baseline: false

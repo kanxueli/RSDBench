@@ -1,0 +1,18 @@
+# Kostopoulos 2025 — phase+tool portrait → dual RandomForest (annotation oracle / upper bound).
+# Tuned on Cholec80 val (seed 42): rich+dual+phase_prior blend=0.35, leaf=1, depth=12.
+# Cataract-101: no tools → phase+elapsed features only.
+model_name: KostopoulosRF
+model:
+  name: KostopoulosRF
+  n_phases: 7
+  n_tools: 7
+  n_estimators: 400
+  min_samples_leaf: 1
+  max_depth: 12
+  subsample_stride: 2
+  feature_mode: rich
+  regressor: rf
+  dual: true
+  use_phase_prior: true
+  blend_prior: 0.35
+is_baseline: true

@@ -1,0 +1,5 @@
+model_name: ConditionalMedian
+model:
+  name: ConditionalMedian
+  stat: median
+is_baseline: true

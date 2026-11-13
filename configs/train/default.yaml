@@ -1,0 +1,22 @@
+device: cuda                 # GPU only; do not set to cpu for real experiments
+allow_cpu: false             # hard guard — ExpBasic raises if CUDA missing
+seed: 42                     # model/init seed inside a split; split seeds come from protocol
+cudnn_benchmark: true
+epochs: 40
+batch_size: 1                # video-level sequences often use 1
+lr: 1.0e-4
+weight_decay: 1.0e-5
+optimizer: adam
+scheduler: null
+grad_clip: 1.0
+amp: false
+early_stopping:
+  enabled: true
+  monitor: mae_all
+  mode: min
+  patience: 10
+checkpoint:
+  save_best: true
+  save_last: true
+log_every: 20
+num_workers: 4

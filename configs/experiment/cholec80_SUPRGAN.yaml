@@ -1,0 +1,6 @@
+# cholec80 × SUPRGAN
+model_name: SUPRGAN
+model:
+  name: SUPRGAN
+  n_phases: 7
+is_baseline: false

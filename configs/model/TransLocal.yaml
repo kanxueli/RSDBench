@@ -1,0 +1,25 @@
+# TransLocal (Loukas et al., Int J Med Robot 2024)
+model_name: TransLocal
+model:
+  name: TransLocal
+  max_len: 100.0
+  n_phases: 7
+  local_window: 60
+  clip_len: 20
+  nhead: 1
+  cnn_chunk: 32
+  use_aws: true
+  aws_crop: 224
+  aspect_height: 224
+is_baseline: false
+batch_size: 1
+epochs: 80
+lr: 5.0e-4
+cnn_lr_mult: 0.1
+grad_clip: 1.0
+early_stopping:
+  enabled: true
+  monitor: mae_all
+  mode: min
+  patience: 15
+train_window: 256

@@ -1,0 +1,5 @@
+model_name: NaiveMedian
+model:
+  name: NaiveMedian
+  stat: median
+is_baseline: true

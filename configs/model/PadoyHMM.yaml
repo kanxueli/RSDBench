@@ -1,0 +1,14 @@
+# Simplified Padoy 2012 — tool Bernoulli L-R HMM → phase → reference RSD.
+# Tuned on Cholec80 val (seed 42): seq + posterior + stay_boost=0.8, tool_smooth=0.
+# Cataract-101: no tools → GT-phase PhaseInferred fallback.
+model_name: PadoyHMM
+model:
+  name: PadoyHMM
+  n_phases: 7
+  n_tools: 7
+  stat: median
+  topology: seq
+  tool_smooth: 0
+  decode: posterior
+  stay_boost: 0.8
+is_baseline: true

@@ -1,0 +1,26 @@
+# Cataract-101 × PitRSDNet
+model_name: PitRSDNet
+model:
+  name: PitRSDNet
+  rsd_norm: 10.0
+  max_len: 20.0
+  n_phases: 10
+  lstm_hidden: 512
+  head_hidden: [512, 256]
+  context_hat_t: 5
+  cnn_chunk: 24
+is_baseline: false
+batch_size: 1
+stages:
+  cnn_epochs: 20
+  cnn_patience: 10
+  cnn_lr: 1.0e-4
+  cnn_batch_size: 50
+  val_batch_size: 150
+  sub_epoch_validation: 100
+  lstm_epochs: [40, 40]
+  lstm_lrs: [1.0e-3, 1.0e-4]
+  lstm_patience: 15
+  input_size: 224
+  feature_batch: 150
+  num_workers: 4

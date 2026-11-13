@@ -1,0 +1,32 @@
+# CataNet (Marafioti et al., MICCAI 2021)
+# Dataset overrides: configs/experiment/{cholec80,cataract101}_CataNet.yaml
+model_name: CataNet
+model:
+  name: CataNet
+  max_len: 20.0
+  n_phases: 11
+  n_experience: 2
+  use_experience: true
+  train_window: 48
+  fps: 2.5
+  frame_pool: .cache/catanet_cataract101/pool
+is_baseline: false
+batch_size: 1
+epochs: 170
+lr: 1.0e-4
+train_window: 48
+weight_decay: 0.0
+stages:
+  cnn_epochs: 20
+  cnn_patience: 10
+  cnn_lr: 1.0e-4
+  cnn_batch_size: 50
+  val_batch_size: 150
+  cnn_weighted_loss: true
+  sub_epoch_validation: 100
+  rnn_epochs: [50, 20, 80]
+  rnn_lrs: [0.001, 0.0001, 0.0005]
+  rnn_patience: [15, 10, 15]
+  rnn_sequence: [train_rnn, train_all, train_rnn]
+  window: 48
+  exp_weight: 0.3

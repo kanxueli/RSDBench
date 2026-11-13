@@ -1,0 +1,4 @@
+model_name: BayesianConditional
+model:
+  name: BayesianConditional
+  stat: median

@@ -1,0 +1,26 @@
+# SUPR-GAN (Ban et al., RA-L 2022)
+model_name: SUPRGAN
+model:
+  name: SUPRGAN
+  n_phases: 7
+  hidden_size: 32
+  past_horizon: 15
+  future_horizon: 15
+  n_samples: 10
+  noise_dim: 16
+  gumbel_tau: 1.0
+  pretrain_epochs: 20
+  epoch_size: 64
+  w_dis: 0.6
+  w_rec: 0.2
+  w_past: 0.2
+  cnn_batch: 192
+  gan_batch: 4
+  pretrained_cnn: true
+epochs: 2000
+lr: 1.0e-4
+early_stopping:
+  enabled: true
+  monitor: mae_all
+  patience: 30
+  val_every: 50

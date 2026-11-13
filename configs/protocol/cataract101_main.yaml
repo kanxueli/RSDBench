@@ -1,0 +1,51 @@
+# Cataract-101 main protocol (aligned with Cholec reporting style)
+# Each seed re-splits train/val/test. Test is surgeon-stratified (≈5 videos / surgeon).
+# Seeds 42..46 — same as cholec80_main. Not CataNet's fixed-test + 6-fold.
+
+name: cataract101_main
+dataset: cataract101
+version: "2.0"
+
+endpoint:
+  # No Zenodo: phase_span from annotations.csv
+  type: incision_to_last_instrument
+  unit: minutes
+  fallback: phase_span
+
+sampling:
+  fps: 1.0
+  native_fps: 2.5
+  source_fps: 25
+
+split:
+  scheme: stratified_repeated_holdout
+  n_repeats: 5
+  seed_start: 42             # seeds = 42..46 (same as Cholec)
+  n_test_per_surgeon: 5      # 4 surgeons × 5 = 20 test
+  val_ratio_in_train: 0.2    # ~65 train / ~16 val / 20 test
+  use_val: true
+
+metrics:
+  windows: [2, 5]
+  primary:
+    - mae_all
+    - mae_2
+    - mae_5
+    - rel_err_all
+    - smape_all
+    - rel_err_5
+    - smape_5
+  stratified:
+    - experience
+    - duration_quartile
+  baselines_required:
+    - NaiveMedian
+    - ConditionalMedian
+  report: mean_std
+
+aggregation:
+  video_macro: true
+
+online:
+  causal: true
+  allow_future_frames: false

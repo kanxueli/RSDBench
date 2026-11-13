@@ -1,0 +1,4 @@
+model_name: BayesianAverage
+model:
+  name: BayesianAverage
+  kappa: 3.0

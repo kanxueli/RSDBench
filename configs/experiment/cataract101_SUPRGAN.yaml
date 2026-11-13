@@ -1,0 +1,7 @@
+# cataract101 × SUPRGAN — dataset override (same pattern as PitRSDNet/SWAG)
+# Cataract phase labels are 0..9 → n_phases=10.
+model_name: SUPRGAN
+model:
+  name: SUPRGAN
+  n_phases: 10
+is_baseline: false

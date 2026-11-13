@@ -1,0 +1,34 @@
+# Paths are machine-agnostic here.
+data_root: null
+cache_root: null
+
+cholec80:
+  root: ${data_root}/cholec80
+  videos_dir: videos
+  phase_dir: phase_annotations
+  tool_dir: tool_annotations
+  video_glob: "video*.mp4"
+  id_format: "video{id:02d}"   # video01 .. video80
+
+cataract101:
+  root: ${data_root}/cataract-101
+  videos_dir: videos
+  videos_csv: videos.csv
+  phases_csv: phases.csv
+  annotations_csv: annotations.csv
+  # Optional CataNet Zenodo corrected labels (frame-wise phase + experience)
+  corrected_labels_dir: null
+  video_name_pattern: "case_{id}.mp4"
+
+frame_cache:
+  enabled: true
+  # Prefer 224 to match model frame_size (no double resize). Extract with --size 224 224.
+  image_size: [224, 224]
+  jpeg_quality: 95
+  # TransLocal only: use fps{tag}_aws{out} JPEG cache; pair with model.use_aws=false.
+  aws_precomputed: false
+  aws_crop: 224
+
+dataloader:
+  num_workers: 4
+  pin_memory: true
