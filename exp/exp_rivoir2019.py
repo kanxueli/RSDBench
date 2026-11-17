@@ -1,4 +1,4 @@
-"""Rivoir 2019 training (Rivoir et al., OR 2.0 / MLCN 2019)."""
+"""Rivoir 2019 training."""
 
 from __future__ import annotations
 
@@ -19,7 +19,6 @@ from utils.metrics import compute_dataset_metrics, protocol_windows
 from utils.seed import set_seed
 from utils.splits import build_protocol_splits, save_splits
 
-
 def _init_uniform_labels(T: int, n_sub: int) -> np.ndarray:
     edges = np.linspace(0, T, n_sub + 1).astype(np.int64)
     lab = np.zeros(T, dtype=np.int64)
@@ -28,7 +27,6 @@ def _init_uniform_labels(T: int, n_sub: int) -> np.ndarray:
     if T:
         lab[-1] = n_sub - 1
     return lab
-
 
 def _resegment_from_logits(logits: np.ndarray, n_sub: int) -> np.ndarray:
     """Force contiguous n_sub segments via DP on cumulative log-prob."""
@@ -67,9 +65,7 @@ def _resegment_from_logits(logits: np.ndarray, n_sub: int) -> np.ndarray:
         j = i
     return lab
 
-
 def _tc_score(pred: np.ndarray, n_sub: int) -> float:
-    """Temporal coherence surrogate score."""
     T = len(pred)
     if T == 0:
         return 0.0
@@ -89,14 +85,12 @@ def _tc_score(pred: np.ndarray, n_sub: int) -> float:
         pos += L
     return float((pred == ref).mean())
 
-
 def _contrastive_l2(a: torch.Tensor, b: torch.Tensor, positive: bool, margin: float) -> torch.Tensor:
     """Contrastive L2; a,b: (B,D)."""
     dist2 = ((a - b) ** 2).sum(-1)
     if positive:
         return dist2.mean()
     return torch.clamp(margin - dist2, min=0.0).mean()
-
 
 class ExpRivoir2019(ExpBasic):
     def __init__(self, configs, repo_root):
@@ -122,6 +116,10 @@ class ExpRivoir2019(ExpBasic):
             "use_corridor": bool(m.get("use_corridor", True)),
             "lambda_sub": float(m.get("lambda_sub", 0.5)),
             "batch_windows": int(m.get("batch_windows", 2)),
+            "steps_per_epoch": int(m.get("steps_per_epoch", 200)),
+            "end_loss_gamma": float(m.get("end_loss_gamma", 0.0)),
+            "end_window_bias": float(m.get("end_window_bias", 0.0)),
+            "select_on": str(m.get("select_on", "mae_all")),
             "pipeline": str(m.get("pipeline", "regularization")),
             "pretrained_lr_mult": float(m.get("pretrained_lr_mult", 0.1)),
             "tc_epochs": int(m.get("tc_epochs", 5)),
@@ -132,10 +130,15 @@ class ExpRivoir2019(ExpBasic):
             "tc_lambda_steady": float(m.get("tc_lambda_steady", 1.0)),
         }
 
-    def _window(self, T: int, win: int):
+    def _window(self, T: int, win: int, end_bias: float = 0.0):
         if T <= win:
             return 0, T
-        s = int(np.random.randint(0, T - win + 1))
+        max_s = T - win
+        if end_bias > 0 and np.random.rand() < float(end_bias):
+            lo = max(0, max_s // 2)
+            s = int(np.random.randint(lo, max_s + 1))
+        else:
+            s = int(np.random.randint(0, max_s + 1))
         return s, s + win
 
     def _sample_tc_batch(self, videos, train_ids, cfg):
@@ -332,7 +335,8 @@ class ExpRivoir2019(ExpBasic):
             print(f"[resume] RSD epoch={start} best={best:.4f}", flush=True)
 
         bw = max(1, cfg["batch_windows"])
-        steps_per_ep = max(1, int(np.ceil(len(train_ids) / bw)) * 2)
+        steps_per_ep = max(cfg["steps_per_epoch"], max(1, int(np.ceil(len(train_ids) / bw)) * 2))
+        select_on = cfg["select_on"]
         for ep in range(start, cfg["epochs"]):
             model.train()
             total, n = 0.0, 0
@@ -345,12 +349,17 @@ class ExpRivoir2019(ExpBasic):
                     frames = read_frames(v["frames"])
                     elapsed = torch.from_numpy(v["elapsed"]).to(self.device)
                     rsd = torch.from_numpy(v["rsd"]).to(self.device)
-                    s, e = self._window(frames.size(0), cfg["train_window"])
+                    s, e = self._window(frames.size(0), cfg["train_window"], cfg["end_window_bias"])
+                    tgt = rsd[s:e]
                     out = model({"frames": gpu_window(frames, s, e, self.device), "elapsed": elapsed[s:e]})
+                    gamma = cfg["end_loss_gamma"]
+                    w = (1.0 + gamma / (tgt.detach().abs() + 0.5)) if gamma > 0 else None
                     if cfg["use_corridor"]:
-                        loss_r = corridor_smooth_l1(out["rsd"], rsd[s:e], elapsed[s:e], t_median)
+                        loss_r = corridor_smooth_l1(out["rsd"], tgt, elapsed[s:e], t_median, weights=w)
+                    elif w is not None:
+                        loss_r = (w * F.smooth_l1_loss(out["rsd"], tgt, reduction="none")).mean()
                     else:
-                        loss_r = F.smooth_l1_loss(out["rsd"], rsd[s:e])
+                        loss_r = F.smooth_l1_loss(out["rsd"], tgt)
                     loss = loss_r
                     if use_aux:
                         lab = torch.from_numpy(labels[vid]).to(self.device)
@@ -363,7 +372,10 @@ class ExpRivoir2019(ExpBasic):
                 n += 1
             print(f"[train] epoch={ep+1} loss={total/max(n,1):.4f}", flush=True)
             vm = self._eval(model, videos, val_ids)["metrics"]
-            score = float(vm["mae_all"])
+            mae = float(vm.get("mae_all", float("nan")))
+            mae2 = float(vm.get("mae_2", float("nan")))
+            mae5 = float(vm.get("mae_5", float("nan")))
+            score = float(vm.get(select_on, mae))
             improved = score < best
             if improved:
                 best, bad = score, 0
@@ -371,7 +383,8 @@ class ExpRivoir2019(ExpBasic):
             else:
                 bad += 1
             print(
-                f"[val] epoch={ep+1} mae_all={score:.4f} best={best:.4f} bad={bad}/{cfg['patience']}"
+                f"[val] epoch={ep+1} mae_all={mae:.4f} mae_2={mae2:.4f} mae_5={mae5:.4f} "
+                f"best_{select_on}={best:.4f} bad={bad}/{cfg['patience']}"
                 + (" **" if improved else ""),
                 flush=True,
             )

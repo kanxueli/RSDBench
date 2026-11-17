@@ -52,18 +52,18 @@ BASELINE_ORDER = [
 ]
 # Board rows for deep methods (placeholders until finished)
 DEEP_ORDER = [
-    "CataNet",
-    "BDNet",
-    "TransLocal",
-    "PitRSDNet",
-    "SWAG",
     "TimeLSTM",
     "RSDNet",
     "VTDNet_V",
     "VTDNet_VT",
     "Rivoir2019",
     "Rivoir2020",
+    "CataNet",
+    "BDNet",
     "SUPRGAN",
+    "TransLocal",
+    "PitRSDNet",
+    "SWAG",
 ]
 
 # Map experiment directory suffixes → board method name

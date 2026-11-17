@@ -86,6 +86,9 @@ def main():
             model_cfg_path.write_text("model: {}\n", encoding="utf-8")
         model_cfg = str(model_cfg_path)
 
+    base_model_cfg = ROOT / "configs" / "model" / f"{args.model}.yaml"
+    base_model_arg = str(base_model_cfg) if base_model_cfg.exists() else None
+
     overrides = parse_overrides(args.override)
     overrides["model_name"] = args.model
     overrides.setdefault("model", {})
@@ -100,6 +103,7 @@ def main():
         data_cfg=args.data_cfg,
         train_cfg=args.train_cfg,
         overrides=overrides,
+        base_model_cfg=base_model_arg,
     )
     cfg = ConfigDict(cfg)
 

@@ -1,4 +1,4 @@
-"""Rivoir 2019 (Rivoir et al., OR 2.0 / MLCN 2019)."""
+"""Rivoir 2019."""
 
 from __future__ import annotations
 
@@ -9,7 +9,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from layers.alexnet_style import AlexNetEncoder
-
 _SEG_CNN_SCHEDULE: List[List[str]] = [
     [],  # iter0: LSTM+FC4 only
     [],  # iter1: +FC2 (still no CNN)
@@ -21,14 +20,14 @@ _SEG_CNN_SCHEDULE: List[List[str]] = [
     ["fc1", "conv5", "conv4", "conv3", "conv2", "conv1"],
 ]
 
-
 def corridor_smooth_l1(
     pred: torch.Tensor,
     tgt: torch.Tensor,
     elapsed: torch.Tensor,
     t_median: float,
+    weights: Optional[torch.Tensor] = None,
 ) -> torch.Tensor:
-    """CorrSmoothL1; pred/tgt/elapsed in minutes."""
+    
     pred = pred.reshape(-1)
     tgt = tgt.reshape(-1)
     elapsed = elapsed.reshape(-1)
@@ -42,8 +41,10 @@ def corridor_smooth_l1(
     denom = (c - tgt).abs().clamp(min=1e-6)
     pi = torch.ones_like(pred)
     pi = torch.where(inside, ((pred - tgt).abs() / denom) ** 2, pi)
-    return (pi * F.smooth_l1_loss(pred, tgt, reduction="none")).mean()
-
+    loss = pi * F.smooth_l1_loss(pred, tgt, reduction="none")
+    if weights is not None:
+        loss = loss * weights.reshape(-1)
+    return loss.mean()
 
 class Model(nn.Module):
     def __init__(self, configs: Mapping[str, Any]):
@@ -111,10 +112,8 @@ class Model(nn.Module):
         return {"rsd": rsd, "sub_logits": sub_logits}
 
     def configure_seg_trainable(self, seg_iter: int) -> None:
-        """Progressive unfreeze for unsupervised segmentation."""
         for p in self.parameters():
             p.requires_grad = False
-        # Always train top appearance head (+FC2 from iter≥1)
         for p in self.lstm.parameters():
             p.requires_grad = True
         for p in self.fc4.parameters():
@@ -124,30 +123,25 @@ class Model(nn.Module):
                 p.requires_grad = True
         idx = min(max(int(seg_iter), 0), len(_SEG_CNN_SCHEDULE) - 1)
         self.cnn.set_requires_grad(_SEG_CNN_SCHEDULE[idx], freeze_rest=True)
-        # FC3 unused in seg — keep frozen
         for p in self.fc3.parameters():
             p.requires_grad = False
 
     def configure_rsd_trainable(self, pipeline: Optional[str] = None) -> None:
-        """Freeze schedule for the RSD stage."""
         pipe = (pipeline or self.pipeline).lower().replace("-", "_")
         self.pipeline = pipe
         for p in self.parameters():
             p.requires_grad = False
 
         if pipe in ("feature_extraction", "fe"):
-            # Conv1–FC1 frozen; train FC2, LSTM, FC3 (+FC4 if aux)
             for mod in (self.fc2, self.lstm, self.fc3, self.fc4):
                 for p in mod.parameters():
                     p.requires_grad = True
         elif pipe in ("pretraining", "pt"):
-            # Conv1–4 frozen; Conv5+FC1 trainable (caller uses lower lr)
             self.cnn.set_requires_grad(["conv5", "fc1"], freeze_rest=True)
             for mod in (self.fc2, self.lstm, self.fc3, self.fc4):
                 for p in mod.parameters():
                     p.requires_grad = True
         else:
-            # regularization: full model
             for p in self.parameters():
                 p.requires_grad = True
 

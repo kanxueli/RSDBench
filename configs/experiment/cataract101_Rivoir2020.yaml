@@ -1,7 +1,16 @@
-# cataract101 × Rivoir2020 — dataset override (same pattern as PitRSDNet/SWAG)
-# Cataract phase labels are 0..9 → n_phases=10 (Cholec remains 7 in model yaml / cholec experiment).
+# cataract101 × Rivoir2020
 model_name: Rivoir2020
 model:
   name: Rivoir2020
   n_phases: 10
+  max_len: 20.0
+  train_window: 384
+  end_loss_gamma: 2.0
+  end_window_bias: 0.5
+  select_on: mae_5
+epochs: 100
+early_stopping:
+  enabled: true
+  monitor: mae_5
+  patience: 20
 is_baseline: false

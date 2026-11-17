@@ -3,4 +3,15 @@ model_name: Rivoir2020
 model:
   name: Rivoir2020
   n_phases: 7
+  max_len: 100.0
+  train_window: 768
+  end_loss_gamma: 2.5
+  end_window_bias: 0.65
+  select_on: mae_5
+  lambda_ce: 0.1
+epochs: 100
+early_stopping:
+  enabled: true
+  monitor: mae_5
+  patience: 20
 is_baseline: false

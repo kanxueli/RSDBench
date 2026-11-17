@@ -1,4 +1,4 @@
-"""SWAG stage-2 training (Boels et al.)."""
+"""SWAG stage-2 training."""
 
 from __future__ import annotations
 
@@ -15,40 +15,39 @@ from exp.exp_rsd import ExpRSD
 from utils.io import ensure_dir
 from utils.metrics import compute_dataset_metrics, protocol_windows
 
-
 def _parse_swag_stage2_log(log_path: Path) -> Optional[Dict[str, Any]]:
-    """Read the latest stage-2 run from a training log (epoch / val / best / early-stop)."""
     if not log_path.is_file():
         return None
     text = log_path.read_text(errors="replace")
     parts = re.split(r"\[swag\] seed=", text)
     if len(parts) < 2:
         return None
-    last = parts[-1]
-    rows = []
-    for m in re.finditer(
-        r"\[swag\] epoch=(\d+)/\d+\s+lr=\S+\s+loss=(\S+)\s+val_mae_all=([\d.]+)",
-        last,
-    ):
-        rows.append(
-            {
-                "epoch": int(m.group(1)),
-                "train_loss": float(m.group(2)),
-                "val_mae_all": float(m.group(3)),
-            }
-        )
-    if not rows:
-        return None
-    best = min(rows, key=lambda r: r["val_mae_all"])
-    last_row = rows[-1]
-    return {
-        "best_ep": int(best["epoch"]),
-        "best": float(best["val_mae_all"]),
-        "last_ep": int(last_row["epoch"]),
-        "bad": max(0, int(last_row["epoch"]) - int(best["epoch"])),
-        "stopped": "[early_stop]" in last,
-        "history": rows,
-    }
+    for last in reversed(parts[1:]):
+        rows = []
+        for m in re.finditer(
+            r"\[swag\] epoch=(\d+)/\d+\s+lr=\S+\s+loss=(\S+)\s+val_mae_all=([\d.]+)",
+            last,
+        ):
+            rows.append(
+                {
+                    "epoch": int(m.group(1)),
+                    "train_loss": float(m.group(2)),
+                    "val_mae_all": float(m.group(3)),
+                }
+            )
+        if not rows:
+            continue
+        best = min(rows, key=lambda r: r["val_mae_all"])
+        last_row = rows[-1]
+        return {
+            "best_ep": int(best["epoch"]),
+            "best": float(best["val_mae_all"]),
+            "last_ep": int(last_row["epoch"]),
+            "bad": max(0, int(last_row["epoch"]) - int(best["epoch"])),
+            "stopped": "[early_stop]" in last,
+            "history": rows,
+        }
+    return None
 
 DEFAULTS = {
     "ctx_length": 1440,
@@ -67,9 +66,7 @@ DEFAULTS = {
     "eta_min": 1e-7,
 }
 
-
 def remaining_time_capped(phase: np.ndarray, h: float, n_classes: int) -> np.ndarray:
-    """base_video_dataset.gt_remaining_time_capped at 1 fps → (T, n_classes + 1) minutes."""
     t_len = len(phase)
     out = np.full((t_len, n_classes + 1), float(h), dtype=np.float32)
     horizon = int(h * 60)
@@ -84,7 +81,6 @@ def remaining_time_capped(phase: np.ndarray, h: float, n_classes: int) -> np.nda
     eos_start = max(0, t_len - horizon)
     out[eos_start:, n_classes] = (t_len - np.arange(eos_start, t_len)) / 60.0
     return out
-
 
 class ExpSWAG(ExpRSD):
     def _cfg(self) -> Dict[str, Any]:
@@ -192,14 +188,13 @@ class ExpSWAG(ExpRSD):
             p = (step - warm) / max(1, total - warm)
             return st["eta_min"] + 0.5 * (st["lr"] - st["eta_min"]) * (1 + math.cos(math.pi * p))
 
-        print(f"[swag] seed={seed} H={st['horizon_min']} train_frames={n} steps/epoch={steps_per_epoch} cfg={st}",
-              flush=True)
         best_p, last_p = out_dir / "swag_best.pth", out_dir / "last.pt"
         best, step, bad, history = float("inf"), 0, 0, []
         patience = int(st.get("patience", 0))
         gen = torch.Generator(device="cpu").manual_seed(seed)
         start_ep = 0
         do_resume = bool(self.configs.get("resume", True))
+        resume_msg = None
         if do_resume and last_p.exists():
             ck = torch.load(last_p, map_location=self.device, weights_only=False)
             model.load_state_dict(ck["model"])
@@ -210,15 +205,17 @@ class ExpSWAG(ExpRSD):
             bad = int(ck.get("bad", 0))
             history = list(ck.get("history", []))
             if "gen" in ck:
-                gen.set_state(ck["gen"])
+                gs = ck["gen"].detach().to("cpu").contiguous()
+                if not isinstance(gs, torch.ByteTensor):
+                    gs = torch.ByteTensor(gs.cpu().numpy())
+                gen.set_state(gs)
             else:
                 for _ in range(start_ep):
                     torch.randperm(n, generator=gen)
-            print(f"[resume] {last_p} epoch={start_ep} step={step} best={best:.4f} bad={bad}", flush=True)
+            resume_msg = f"[resume] {last_p} epoch={start_ep} step={step} best={best:.4f} bad={bad}"
             if ck.get("stopped", False):
                 start_ep = int(st["epochs"])
         elif do_resume and best_p.exists():
-            # No last.pt (killed mid-run before this feature): recover from log + swag_best.pth.
             log_candidates = [
                 Path(self.repo_root) / "results" / "logs" / f"cholec80_seed{seed}_swag_stage2.log",
                 Path(self.repo_root) / "results" / "logs" / f"{self.configs['dataset']}_seed{seed}_swag_stage2.log",
@@ -233,8 +230,6 @@ class ExpSWAG(ExpRSD):
                     break
             if parsed is not None:
                 model.load_state_dict(torch.load(best_p, map_location=self.device, weights_only=False))
-                # Continue from the best-val epoch (weights match that epoch); patience already spent
-                # after it is restored so we do not pretend those worse epochs never happened.
                 start_ep = int(parsed["best_ep"])
                 best = float(parsed["best"])
                 bad = int(parsed["bad"])
@@ -242,17 +237,19 @@ class ExpSWAG(ExpRSD):
                 history = list(parsed.get("history") or [])
                 for _ in range(start_ep):
                     torch.randperm(n, generator=gen)
-                print(
+                resume_msg = (
                     f"[resume] bootstrap {best_p.name} + {log_used.name}: "
                     f"best@ep{parsed['best_ep']}={best:.4f} last_ep={parsed['last_ep']} "
-                    f"→ start_ep={start_ep} bad={bad}/{patience} (fresh optim)",
-                    flush=True,
+                    f"→ start_ep={start_ep} bad={bad}/{patience} (fresh optim)"
                 )
                 if parsed.get("stopped"):
                     start_ep = int(st["epochs"])
             else:
-                print(f"[resume] found {best_p} but no parseable stage-2 log → train from scratch",
-                      flush=True)
+                resume_msg = f"[resume] found {best_p} but no parseable stage-2 log → train from scratch"
+        print(f"[swag] seed={seed} H={st['horizon_min']} train_frames={n} steps/epoch={steps_per_epoch} cfg={st}",
+              flush=True)
+        if resume_msg:
+            print(resume_msg, flush=True)
         H = float(st["horizon_min"])
         for ep in range(start_ep, st["epochs"]):
             model.train()

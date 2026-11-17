@@ -1,4 +1,4 @@
-# Rivoir 2019 (Rivoir et al., OR 2.0 / MLCN 2019)
+# Rivoir 2019
 model_name: Rivoir2019
 model:
   name: Rivoir2019
@@ -15,9 +15,13 @@ model:
   train_window: 384
   cnn_batch: 256
   batch_windows: 2
-  pretrained_cnn: false
-  imagenet_norm: false
+  steps_per_epoch: 200
+  pretrained_cnn: true
+  imagenet_norm: true
   pretrained_lr_mult: 0.1
+  end_loss_gamma: 2.0
+  end_window_bias: 0.5
+  select_on: mae_5
   tc_epochs: 5
   tc_steps: 200
   tc_batch: 16
@@ -29,5 +33,5 @@ lr: 1.0e-5
 weight_decay: 1.0e-5
 early_stopping:
   enabled: true
-  monitor: mae_all
+  monitor: mae_5
   patience: 20

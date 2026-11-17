@@ -124,15 +124,21 @@ def load_experiment_config(
     data_cfg: Optional[Union[str, Path]] = None,
     train_cfg: Optional[Union[str, Path]] = None,
     overrides: Optional[Mapping[str, Any]] = None,
+    base_model_cfg: Optional[Union[str, Path]] = None,
 ) -> Dict[str, Any]:
-    """Merge protocol ← data ← train ← model ← CLI overrides, then interpolate."""
+    """Merge protocol ← data ← train ← [base model] ← model/overlay ← CLI overrides."""
     root = Path(__file__).resolve().parents[1]
     pieces = [
         load_yaml(protocol_cfg),
         load_yaml(data_cfg or root / "configs" / "data" / "default.yaml"),
         load_yaml(train_cfg or root / "configs" / "train" / "default.yaml"),
-        load_yaml(model_cfg),
     ]
+    if base_model_cfg is not None:
+        base_path = Path(base_model_cfg)
+        overlay_path = Path(model_cfg).resolve()
+        if base_path.exists() and base_path.resolve() != overlay_path:
+            pieces.append(load_yaml(base_path))
+    pieces.append(load_yaml(model_cfg))
     cfg = merge_configs(*pieces)
     if overrides:
         _deep_merge(cfg, overrides)

@@ -1,4 +1,4 @@
-# Cholec80 × CataNet
+# cholec80 × CataNet
 model_name: CataNet
 sampling:
   fps: 2.5
@@ -10,9 +10,10 @@ model:
   use_experience: false
   train_window: 48
   fps: 2.5
+  frame_pool: .cache/catanet_cholec80/pool
 is_baseline: false
 batch_size: 1
-epochs: 170
+epochs: 160
 lr: 1.0e-4
 train_window: 48
 weight_decay: 0.0
@@ -24,9 +25,9 @@ stages:
   val_batch_size: 150
   cnn_weighted_loss: true
   sub_epoch_validation: 0
-  rnn_epochs: [50, 20, 80]
+  rnn_epochs: [50, 10, 80]
   rnn_lrs: [0.001, 0.0001, 0.0005]
-  rnn_patience: [15, 10, 15]
+  rnn_patience: [15, 5, 15]
   rnn_sequence: [train_rnn, train_all, train_rnn]
   window: 48
   exp_weight: 0.0

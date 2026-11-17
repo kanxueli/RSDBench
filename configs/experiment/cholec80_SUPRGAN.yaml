@@ -3,4 +3,16 @@ model_name: SUPRGAN
 model:
   name: SUPRGAN
   n_phases: 7
+  max_len: 100.0
+  past_horizon: 30
+  future_horizon: 20
+  pretrain_epochs: 100
+  phase_only_epochs: 40
+  pretrain_win: 160
+  w_past: 2.5
+  w_dis: 0.4
+  w_rsd: 1.2
+  select_on: mae_5
+  end_loss_gamma: 2.5
+  label_smooth: 0.08
 is_baseline: false
